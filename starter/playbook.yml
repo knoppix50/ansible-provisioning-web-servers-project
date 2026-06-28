@@ -31,7 +31,7 @@
 
 # PLAY 2: Deploy webserver role
 - name: Deploy Webserver Role
-  hosts: all
+  hosts: aws
   become: true
   roles:
     - role: webserver
