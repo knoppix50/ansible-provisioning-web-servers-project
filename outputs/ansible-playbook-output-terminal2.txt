@@ -1,0 +1,89 @@
+[ec2-user@ip-172-31-31-178 starter]$ ansible-playbook -i inventory.ini playbook.yml --limit "aws"
+
+PLAY [Prepare AWS Firewall] **********************************************************************************************************************************
+
+TASK [Gathering Facts] ***************************************************************************************************************************************
+ok: [ip-172-31-26-26.ec2.internal]
+ok: [ip-172-31-27-102.ec2.internal]
+ok: [ip-172-31-30-157.ec2.internal]
+
+TASK [Install firewalld] *************************************************************************************************************************************
+ok: [ip-172-31-26-26.ec2.internal]
+ok: [ip-172-31-27-102.ec2.internal]
+ok: [ip-172-31-30-157.ec2.internal]
+
+TASK [Start and enable firewalld] ****************************************************************************************************************************
+ok: [ip-172-31-26-26.ec2.internal]
+ok: [ip-172-31-27-102.ec2.internal]
+ok: [ip-172-31-30-157.ec2.internal]
+
+TASK [Open ports 80 and 443 in firewalld] ********************************************************************************************************************
+ok: [ip-172-31-26-26.ec2.internal] => (item=80)
+ok: [ip-172-31-27-102.ec2.internal] => (item=80)
+ok: [ip-172-31-30-157.ec2.internal] => (item=80)
+ok: [ip-172-31-26-26.ec2.internal] => (item=443)
+ok: [ip-172-31-27-102.ec2.internal] => (item=443)
+ok: [ip-172-31-30-157.ec2.internal] => (item=443)
+
+PLAY [Deploy Webserver Role] *********************************************************************************************************************************
+
+TASK [Gathering Facts] ***************************************************************************************************************************************
+ok: [ip-172-31-27-102.ec2.internal]
+ok: [ip-172-31-26-26.ec2.internal]
+ok: [ip-172-31-30-157.ec2.internal]
+
+TASK [webserver : Install nginx package] *********************************************************************************************************************
+ok: [ip-172-31-26-26.ec2.internal]
+ok: [ip-172-31-27-102.ec2.internal]
+ok: [ip-172-31-30-157.ec2.internal]
+
+TASK [webserver : Create web directories with permissions] ***************************************************************************************************
+ok: [ip-172-31-26-26.ec2.internal] => (item=/var/www/html/www.companyplus.com)
+changed: [ip-172-31-27-102.ec2.internal] => (item=/var/www/html/www.companyplus.com)
+changed: [ip-172-31-30-157.ec2.internal] => (item=/var/www/html/www.companyplus.com)
+ok: [ip-172-31-26-26.ec2.internal] => (item=/var/www/html/www.companypulsar.com)
+ok: [ip-172-31-27-102.ec2.internal] => (item=/var/www/html/www.companypulsar.com)
+ok: [ip-172-31-30-157.ec2.internal] => (item=/var/www/html/www.companypulsar.com)
+
+TASK [webserver : Template nginx.conf.j2 configuration] ******************************************************************************************************
+ok: [ip-172-31-26-26.ec2.internal]
+ok: [ip-172-31-27-102.ec2.internal]
+ok: [ip-172-31-30-157.ec2.internal]
+
+TASK [webserver : Ensure nginx service is started and enabled] ***********************************************************************************************
+ok: [ip-172-31-26-26.ec2.internal]
+ok: [ip-172-31-27-102.ec2.internal]
+ok: [ip-172-31-30-157.ec2.internal]
+
+PLAY [Verify Webserver Deployment] ***************************************************************************************************************************
+
+TASK [Gathering Facts] ***************************************************************************************************************************************
+ok: [ip-172-31-26-26.ec2.internal]
+ok: [ip-172-31-27-102.ec2.internal]
+ok: [ip-172-31-30-157.ec2.internal]
+
+TASK [Check if directory exists] *****************************************************************************************************************************
+ok: [ip-172-31-26-26.ec2.internal]
+ok: [ip-172-31-27-102.ec2.internal]
+ok: [ip-172-31-30-157.ec2.internal]
+
+TASK [Display error if directory does not exist] *************************************************************************************************************
+skipping: [ip-172-31-27-102.ec2.internal]
+skipping: [ip-172-31-26-26.ec2.internal]
+skipping: [ip-172-31-30-157.ec2.internal]
+
+TASK [Print success message stating it exists] ***************************************************************************************************************
+ok: [ip-172-31-27-102.ec2.internal] => {
+    "msg": "SUCCESS: The directory /var/www/html/www.companyplus.com exists."
+}
+ok: [ip-172-31-26-26.ec2.internal] => {
+    "msg": "SUCCESS: The directory /var/www/html/www.companyplus.com exists."
+}
+ok: [ip-172-31-30-157.ec2.internal] => {
+    "msg": "SUCCESS: The directory /var/www/html/www.companyplus.com exists."
+}
+
+PLAY RECAP ***************************************************************************************************************************************************
+ip-172-31-26-26.ec2.internal : ok=12   changed=0    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+ip-172-31-27-102.ec2.internal : ok=12   changed=1    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+ip-172-31-30-157.ec2.internal : ok=12   changed=1    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0  

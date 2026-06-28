@@ -1,12 +1,12 @@
 ---
-# PLAY 1: Pre-configuring the Firewall on the AWS hosts
-- name: Prepare AWS Firewall
+- name: Complete AWS Webserver Deployment
   hosts: aws
   become: true
   vars:
     ports:
       - 80
       - 443
+
   tasks:
     - name: Ensure firewalld is installed and running
       block:
@@ -29,22 +29,16 @@
         state: enabled
       loop: "{{ ports }}"
 
-# PLAY 2: Deploy webserver role
-- name: Deploy Webserver Role
-  hosts: all
-  become: true
-  roles:
-    - role: webserver
+    # 1. Run the role to create the two sites and configure Nginx
+    - name: Execute webserver role
+      ansible.builtin.include_role:
+        name: webserver
       vars:
         app_root: html_demo_site-main
         server_name: "{{ ansible_default_ipv4.address }}"
         document_root: /var/www/html
 
-# PLAY 3: Subsequent verification of the created directory
-- name: Verify Webserver Deployment
-  hosts: aws
-  become: true
-  tasks:
+    # 2. Then we check that companyplus has been created correctly
     - name: Verify companyplus directory existence
       block:
         - name: Check if directory exists
@@ -60,6 +54,7 @@
         - name: Print success message stating it exists
           ansible.builtin.debug:
             msg: "SUCCESS: The directory /var/www/html/www.companyplus.com exists."
+          when: dir_check.stat.exists
 
       rescue:
         - name: Graceful error output via debug
