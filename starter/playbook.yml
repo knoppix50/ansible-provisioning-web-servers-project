@@ -1,0 +1,62 @@
+---
+- name: Complete AWS Webserver Deployment
+  hosts: aws
+  become: true
+  vars:
+    ports:
+      - 80
+      - 443
+
+  tasks:
+    - name: Ensure firewalld is installed and running
+      block:
+        - name: Install firewalld
+          ansible.builtin.package:
+            name: firewalld
+            state: present
+
+        - name: Start and enable firewalld
+          ansible.builtin.service:
+            name: firewalld
+            state: started
+            enabled: true
+
+    - name: Open ports 80 and 443 in firewalld
+      firewalld:
+        port: "{{ item }}/tcp"
+        permanent: true
+        immediate: true
+        state: enabled
+      loop: "{{ ports }}"
+
+    # 1. Run the role to create the two sites and configure Nginx
+    - name: Execute webserver role
+      ansible.builtin.include_role:
+        name: webserver
+      vars:
+        app_root: html_demo_site-main
+        server_name: "{{ ansible_default_ipv4.address }}"
+        document_root: /var/www/html
+
+    # 2. Then we check that companyplus has been created correctly
+    - name: Verify companyplus directory existence
+      block:
+        - name: Check if directory exists
+          ansible.builtin.stat:
+            path: /var/www/html/www.companyplus.com
+          register: dir_check
+
+        - name: Display error if directory does not exist
+          ansible.builtin.fail:
+            msg: "ERROR: The directory /var/www/html/www.companyplus.com does not exist!"
+          when: not dir_check.stat.exists
+
+        - name: Print success message stating it exists
+          ansible.builtin.debug:
+            msg: "SUCCESS: The directory /var/www/html/www.companyplus.com exists."
+          when: dir_check.stat.exists
+
+      rescue:
+        - name: Graceful error output via debug
+          ansible.builtin.debug:
+            msg: "CRITICAL: The block section captured a missing directory error."
